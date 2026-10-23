@@ -16,6 +16,7 @@ We collect only what the Service actually needs to work. Specifically, today:
 
 **Account data**
 - Email address and password (password is handled entirely by our authentication provider, Supabase Auth, using industry-standard hashing — Herald Network never sees or stores your plaintext password).
+- If you choose "Continue with Google": your Google account email address and name, which Google passes to us through Supabase Auth. We do not receive your Google password and we do not access any other Google data.
 
 **Profile data (visible to you; some fields visible to other users depending on your settings)**
 - Display name
