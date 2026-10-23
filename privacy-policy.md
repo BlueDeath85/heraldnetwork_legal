@@ -19,7 +19,7 @@ We collect only what the Service actually needs to work. Specifically, today:
 
 **Profile data (visible to you; some fields visible to other users depending on your settings)**
 - Display name
-- Region (a free-text field you enter yourself, e.g. "Budapest, HU" — the Service does **not** collect your device's GPS location or precise coordinates)
+- Region (a free-text field you enter yourself, e.g. "Budapest, HU" — this field is only a label on your profile)
 - Bio / short description
 - Profile photo
 - Privacy preferences (currently: whether you appear on the public Rankings leaderboard)
@@ -46,9 +46,12 @@ We collect only what the Service actually needs to work. Specifically, today:
 **Device data (only if you enable push notifications on a physical device)**
 - A push notification token issued by Apple/Google via Expo's push service, and your device platform (iOS/Android). We use this solely to deliver notifications about events and applications you've opted into; we do not use it for advertising.
 
+**Approximate location (only if you tap "Use my location")**
+- If you allow it, the app reads your phone's approximate location once, rounds it to about 1 km, and keeps it **only on your phone** to work out how far events are from you. It is never sent to our servers or shared with anyone, and we never track your movements. You can revoke the permission in your phone's settings at any time; the app then simply stops showing distances.
+
 **What we do *not* collect**
 - We do not use any third-party analytics or crash-reporting SDKs. (We do use Google AdMob for advertising — see "Advertising" below.)
-- We do not collect precise/GPS location.
+- We do not collect or store your location on our servers (see "Approximate location" above).
 - We do not sell your personal data to anyone.
 
 ## 3. How we use your data
