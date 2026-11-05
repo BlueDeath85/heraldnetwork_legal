@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Herald Network</title>
+<meta name="robots" content="noindex">
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; font-family: -apple-system, system-ui, "Segoe UI", Roboto, sans-serif; background: #111C28; color: #F3EEE3; display: flex; min-height: 100vh; align-items: center; justify-content: center; }
+  main { width: 100%; max-width: 440px; padding: 24px 16px; box-sizing: border-box; }
+  .brand { letter-spacing: .18em; font-size: 12px; opacity: .7; text-transform: uppercase; margin-bottom: 16px; }
+  .card { background: #1A2A3B; border-radius: 16px; overflow: hidden; }
+  .card img { width: 100%; max-height: 220px; object-fit: cover; display: block; }
+  .pad { padding: 20px; }
+  h1 { font-size: 24px; line-height: 1.2; margin: 0 0 8px; }
+  p { margin: 4px 0; opacity: .85; }
+  .btn { display: block; text-align: center; text-decoration: none; padding: 14px 16px; border-radius: 12px; font-weight: 600; margin-top: 12px; }
+  .primary { background: #C9A24B; color: #111C28; }
+  .secondary { border: 1px solid #3A4C60; color: #F3EEE3; }
+  .note { font-size: 13px; opacity: .6; margin-top: 16px; text-align: center; }
+</style>
+</head>
+<body>
+<main>
+  <div class="brand">Herald Network</div>
+  <div class="card" id="card">
+    <div class="pad"><h1 id="name">…</h1><p id="when"></p><p id="where"></p></div>
+  </div>
+  <a class="btn primary" id="open" href="#"></a>
+  <a class="btn secondary" id="store" href="#"></a>
+  <p class="note" id="note"></p>
+</main>
+<script>
+  // Public values: the Supabase anon key is meant to ship in clients; row-level security limits what it can read.
+  var SUPABASE_URL = 'https://mdqqkqhyiajwpfyanzjt.supabase.co';
+  var SUPABASE_ANON_KEY = 'sb_publishable_3MnIQfG87tweRqd73KJ2sA_owNS0PGE';
+  var PLAY_URL = 'https://play.google.com/store/apps/details?id=com.whiterabbitgames.heraldnetwork';
+  var APPSTORE_URL = ''; // fill in once the iOS app has an App Store page
+
+  var lang = (navigator.language || 'en').slice(0, 2);
+  var T = {
+    en: { open: 'Open in the app', store: 'Get the app', note: 'Events on Herald Network: reenactment, HEMA, buhurt and living history.', missing: 'This event could not be found.' },
+    hu: { open: 'Megnyitás az appban', store: 'Az app letöltése', note: 'Herald Network: hagyományőrző, HEMA, buhurt és élő történelem események.', missing: 'Ez az esemény nem található.' },
+    de: { open: 'In der App öffnen', store: 'App herunterladen', note: 'Herald Network: Reenactment-, HEMA-, Buhurt- und Living-History-Events.', missing: 'Dieses Event wurde nicht gefunden.' }
+  };
+  var L = T[lang] || T.en;
+
+  var id = new URLSearchParams(location.search).get('id') || '';
+  var valid = /^[0-9a-fA-F-]{36}$/.test(id);
+  var ua = navigator.userAgent;
+  var isIOS = /iPhone|iPad|iPod/.test(ua);
+
+  document.getElementById('open').textContent = L.open;
+  document.getElementById('store').textContent = L.store;
+  document.getElementById('note').textContent = L.note;
+  document.getElementById('store').href = (isIOS && APPSTORE_URL) ? APPSTORE_URL : PLAY_URL;
+  if (isIOS && !APPSTORE_URL) document.getElementById('store').style.display = 'none';
+
+  if (!valid) {
+    document.getElementById('name').textContent = L.missing;
+    document.getElementById('open').style.display = 'none';
+  } else {
+    var deepLink = 'heraldnetwork://event/' + id;
+    document.getElementById('open').href = deepLink;
+    // On a phone with the app installed this opens it straight away; otherwise nothing happens and the buttons stay.
+    if (/Android|iPhone|iPad|iPod/.test(ua)) setTimeout(function () { location.href = deepLink; }, 400);
+
+    fetch(SUPABASE_URL + '/rest/v1/events?id=eq.' + encodeURIComponent(id) + '&select=name,start_date,end_date,location,photo_url&limit=1', {
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + SUPABASE_ANON_KEY }
+    }).then(function (r) { return r.json(); }).then(function (rows) {
+      var e = rows && rows[0];
+      if (!e) { document.getElementById('name').textContent = L.missing; return; }
+      document.title = e.name + ' · Herald Network';
+      document.getElementById('name').textContent = e.name;
+      var fmt = function (d) { return new Date(d.slice(0, 10) + 'T12:00:00').toLocaleDateString(lang, { day: 'numeric', month: 'long', year: 'numeric' }); };
+      var when = fmt(e.start_date) + (e.end_date && e.end_date.slice(0, 10) !== e.start_date.slice(0, 10) ? ' – ' + fmt(e.end_date) : '');
+      document.getElementById('when').textContent = when;
+      document.getElementById('where').textContent = e.location || '';
+      if (e.photo_url && /^https:\/\//.test(e.photo_url)) {
+        var img = new Image(); img.alt = ''; img.src = e.photo_url;
+        document.getElementById('card').insertBefore(img, document.getElementById('card').firstChild);
+      }
+    }).catch(function () { document.getElementById('name').textContent = L.missing; });
+  }
+</script>
+</body>
+</html>
